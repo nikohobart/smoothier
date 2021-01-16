@@ -1,0 +1,10 @@
+.recipe-item {
+  cursor: pointer;
+  border-bottom: 20px aliceblue;
+  border-top: 20px aliceblue;
+}
+
+.recipe-item .rec-img {
+  max-width: 100px;
+  border-radius: 10px;
+}
