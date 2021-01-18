@@ -2,10 +2,12 @@ import React from 'react';
 import RecipeItem from './RecipeItem';
 
 const RecipeList = ({ recipes, onRecipeSelect }) => {
+  if (!Array.isArray(recipes)) return <div>Loading...</div>;
+
   const renderedList = recipes.map(recipe => {
     return (
       <RecipeItem
-        key={recipe.id}
+        key={recipe.recipe_id}
         recipe={recipe}
         onRecipeSelect={onRecipeSelect}
       />

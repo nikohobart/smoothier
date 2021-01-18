@@ -3,6 +3,8 @@ import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 
 import AddRecipeForm from './AddRecipeForm';
+import { generateUID } from '../helpers';
+import { upload } from '../api/api';
 
 const DEFAULT_IMAGE =
   'https://previews.123rf.com/images/jemastock/jemastock1903/jemastock190301516/118224415-fruit-smoothie-drink-white-drawing-on-black-background-vector-illustration-graphic-design.jpg';
@@ -33,22 +35,22 @@ const FormModal = ({
       setImgUrl(toEdit.image_url);
       setDescription(toEdit.notes);
       setIngredients(
-        toEdit.ingredients.map(ing => ing.quantity + ' ' + ing.name).join(', ')
+        toEdit.ingredients.map(ing => ing.measure + ' ' + ing.name).join(', ')
       );
     } else {
       setTitle('Add Smoothie Recipe');
-      setters.forEach(func => func(''));
     }
   }, [toEdit]);
 
   const exit = () => {
     setToEdit(null);
+    setters.forEach(func => func(''));
     hideModal();
   };
 
   const validateIngredients = ingList => {
     return ingList.every(
-      ing => ing.name && ing.quantity && parseInt(ing.quantity.split(' ')[0])
+      ing => ing.name && ing.measure && parseInt(ing.measure.split(' ')[0])
     );
   };
 
@@ -60,10 +62,11 @@ const FormModal = ({
     e.preventDefault();
 
     const ingList = ingredients.split(', ').map(str => {
+      const ingSplit = str.split(' ');
       return {
-        name: str.split(' ')[2],
-        id: Math.random(),
-        quantity: str.split(' ')[0] + ' ' + str.split(' ')[1],
+        name: ingSplit[2],
+        ingredient_id: generateUID(recipeName + '+' + ingSplit[2]),
+        measure: ingSplit[0] + ' ' + ingSplit[1],
       };
     });
 
@@ -71,23 +74,25 @@ const FormModal = ({
       return;
 
     if (toEdit) {
-      const rec = recipes.find(recipe => recipe.id === toEdit.id);
+      const rec = recipes.find(recipe => recipe.recipe_id === toEdit.recipe_id);
       rec.name = recipeName;
       rec.image_url = imgUrl ? imgUrl : DEFAULT_IMAGE;
       rec.notes = description;
       rec.ingredients = ingList;
+
+      upload(rec);
     } else {
-      // TODO: generate id
-      const id = Math.random();
+      const id = generateUID(recipeName);
 
       const new_rec = {
         name: recipeName,
-        id: id,
+        recipe_id: id,
         image_url: imgUrl ? imgUrl : DEFAULT_IMAGE,
         notes: description,
         ingredients: ingList,
       };
       setRecipes([...recipes, ...[new_rec]]);
+      upload(new_rec);
     }
 
     exit();
